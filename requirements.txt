@@ -1,7 +1,10 @@
-transformers
-gtts
-pysearch
-nmap
-speech_recognition
-pyaudio
-mpg123
+mpg123==0.4
+torch==2.2.2
+transformers==4.40.0
+gtts==2.5.1
+pyaudio==0.2.14
+SpeechRecognition==3.10.3
+python-pySearch==0.1.1
+configparser==7.0.0
+python3-nmap==1.6.0
+xmltodict==0.13.0
