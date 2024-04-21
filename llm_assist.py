@@ -9,6 +9,7 @@ import json
 import speech_recognition as sr
 import pyaudio
 import nmap
+import xmltodict
 
 # Load the configuration file
 config = ConfigParser()
@@ -86,7 +87,32 @@ def generate_speech(text):
 def perform_nmap_scan(target):
     nm = nmap.PortScanner()
     results = nm.scan(target, '1-1024')
-    return results
+    xml_output = nm.get_nmap_last_output()
+    open_ports, services, dns_records = process_nmap_output(xml_output)
+    # Display Nmap scan results
+    print("Nmap Scan Results:")
+    print("Open Ports:")
+    for port in open_ports:
+        print(f"Port: {port['portid']}")
+        print(f"Service: {port['protocol']}")
+        print()
+    print("Services:")
+    for service in services:
+        print(f"Service: {service['name']}")
+        print(f"Port: {service['port']}")
+        print()
+    print("DNS Records:")
+    for dns_record in dns_records:
+        print(f"Host: {dns_record['host']}")
+        print(f"IP: {dns_record['ip']}")
+        print()
+
+def process_nmap_output(xml_output):
+    data = xmltodict.parse(xml_output)
+    open_ports = data['nmaprun']['port']
+    services = data['nmaprun']['service']
+    dns_records = data['nmaprun']['dns-brute']['table']
+    return open_ports, services, dns_records
 
 # Define the chatbot loop
 def chatbot():
@@ -103,39 +129,24 @@ def chatbot():
                     # Display search results
                     if results:
                         print("Search Results:")
-                        for result in results:
-                            print(f"Title: {result['title']}")
-                            print(f"URL: {result['url']}")
-                            print(f"Description: {result['description']}")
-                            print()
-                    else:
-                        print("No results found.")
+                                            for result in results:
+                        print(f"Title: {result['title']}")
+                        print(f"Link: {result['link']}")
+                        print()
+            elif user_input.startswith("!gpt"):
+                prompt = user_input[len("!gpt"):].strip()
+                if prompt:
+                    response = ask_gpt(prompt)
+                    print("GPT Response:")
+                    print(response)
             elif user_input.startswith("!nmap"):
                 target = user_input[len("!nmap"):].strip()
                 if target:
-                    results = perform_nmap_scan(target)
-                    # Display Nmap scan results
-                    if results:
-                        print("Nmap Scan Results:")
-                        for host, ports in results.items():
-                            print(f"Host: {host}")
-                            for port, data in ports.items():
-                                print(f"Port: {port}")
-                                print(f"Service: {data['name']}")
-                                print()
-                    else:
-                        print("No results found.")
+                    perform_nmap_scan(target)
             else:
-                prompt = f"user: {user_input}"
-                response = ask_gpt(prompt)
-                generate_speech(response)
-                print(f"ARIA: {response}")
-        except Exception as e:
-            print(f"An error
+                print("Invalid command. Please try again.")
         except Exception as e:
             print(f"An error occurred: {str(e)}")
-
-        input("Press Enter to respond...")
 
 # Execute the chatbot
 if __name__ == "__main__":
