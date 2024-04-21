@@ -84,18 +84,13 @@ def generate_speech(text):
     subprocess.run(["mpg123", "./output.mp3"])
 
 # Define the function to perform Nmap scan
-elif user_input.startswith("!nmap"):
-    target = user_input[len("!nmap"):].strip()
-    if target:
-        perform_nmap_scan(target)
-    else:
-        print("Please provide a target IP or hostname")
-        
 def perform_nmap_scan(target):
     nm = nmap.PortScanner()
     results = nm.scan(target, '1-1024')
     xml_output = nm.get_nmap_last_output()
     open_ports, services, dns_records = process_nmap_output(xml_output)
+    os_info = perform_os_detection(target)
+    version_info = perform_version_detection(target)
     # Display Nmap scan results
     print("Nmap Scan Results:")
     print("Open Ports:")
@@ -113,7 +108,26 @@ def perform_nmap_scan(target):
         print(f"Host: {dns_record['host']}")
         print(f"IP: {dns_record['ip']}")
         print()
+    print("OS Information:")
+    print(os_info)
+    print("Version Information:")
+    print(version_info)
 
+# Define the function to perform OS detection
+def perform_os_detection(target):
+    nm = nmap.PortScanner()
+    results = nm.scan(target, arguments="-O")
+    os_info = results["scan"][target]["os"]
+    return os_info
+
+# Define the function to perform version detection
+def perform_version_detection(target):
+    nm = nmap.PortScanner()
+    results = nm.scan(target, arguments="-sV")
+    version_info = results["scan"][target]["version"]
+    return version_info
+
+# Define the function to process Nmap output
 def process_nmap_output(xml_output):
     data = xmltodict.parse(xml_output)
     open_ports = data['nmaprun']['port']
@@ -136,10 +150,10 @@ def chatbot():
                     # Display search results
                     if results:
                         print("Search Results:")
-                                            for result in results:
-                        print(f"Title: {result['title']}")
-                        print(f"Link: {result['link']}")
-                        print()
+                        for result in results:
+                            print(f"Title: {result['title']}")
+                            print(f"Link: {result['link']}")
+                            print()
             elif user_input.startswith("!gpt"):
                 prompt = user_input[len("!gpt"):].strip()
                 if prompt:
