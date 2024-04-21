@@ -1,0 +1,7 @@
+transformers
+gtts
+pysearch
+nmap
+speech_recognition
+pyaudio
+mpg123
