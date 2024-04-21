@@ -84,6 +84,13 @@ def generate_speech(text):
     subprocess.run(["mpg123", "./output.mp3"])
 
 # Define the function to perform Nmap scan
+elif user_input.startswith("!nmap"):
+    target = user_input[len("!nmap"):].strip()
+    if target:
+        perform_nmap_scan(target)
+    else:
+        print("Please provide a target IP or hostname")
+        
 def perform_nmap_scan(target):
     nm = nmap.PortScanner()
     results = nm.scan(target, '1-1024')
